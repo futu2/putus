@@ -26,6 +26,10 @@ foreign import javascript unsafe "$1.replaceChildren()"
 foreign import javascript unsafe "$1.target.value"
   js_event_target_value :: JSVal -> IO Double
 
+foreign import javascript unsafe "$1.target.checked"
+  js_event_target_checked :: JSVal -> IO Bool
+
+
 foreign import javascript unsafe "$1.style.opacity = $2"
   js_setOpacity :: JSVal -> Double -> IO ()
 
@@ -38,6 +42,9 @@ foreign import javascript "wrapper"
 foreign import javascript unsafe "$1.setAttribute($2, $3);"
   js_setAttribute :: JSVal -> JSString -> JSString -> IO ()
 
+
+
+-- html
 foreign import javascript unsafe "document.createElement('div')"
   js_document_createElement_div :: IO JSVal
 

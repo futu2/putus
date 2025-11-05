@@ -22,6 +22,9 @@ data Signal m a = Signal
   , signalHandlers :: MVar [a -> m ()]
   }
 
+readSignal :: Signal m a -> IO a
+readSignal = readMVar . signalValue
+
 updateSignal :: Signal m a -> (a -> a) -> IO ()
 updateSignal = writeChan . signalChan
 
@@ -35,6 +38,14 @@ reactSignal sig h = div_ $ useSignal sig (\v -> removeChildren >> h v)
 
 onClick :: AppM m => Signal m a -> (a -> a) -> m ()
 onClick sig f = addEventListener "click" (const $ updateSignal sig f)
+
+onChange :: AppM m => Signal m a -> (Bool -> a -> a) -> m ()
+onChange sig f = addEventListener "change" $ \e -> do
+  e' <- js_event_target_checked e
+  updateSignal sig $ f e'
+
+-- onChange :: AppM m => Signal m a -> (JSVal -> a -> a) -> m ()
+-- onChange sig f = addEventListener "change" (\e -> updateSignal sig $ f e)
 
 withSignal :: AppM m => a -> (Signal m a -> m ()) -> m ()
 withSignal initValue inner = do
@@ -101,6 +112,15 @@ setAttribute attributeName attributeValue = do
   root <- asks rootElement
   liftIO $ js_setAttribute root (toJSString attributeName) (toJSString attributeValue)
 
+class_ :: AppM m => String -> m ()
+class_ = setAttribute "class"
+
+type_ :: AppM m => String -> m ()
+type_ = setAttribute "type"
+
+role_ :: AppM m => String -> m ()
+role_ = setAttribute "role"
+
 el :: AppM m => String -> m () -> m ()
 el tag child = do
   newElement <- createElement tag
@@ -146,6 +166,9 @@ span_ = wrapRawElement js_document_createElement_span
 
 button_ :: AppM m => m () -> m ()
 button_ = wrapRawElement js_document_createElement_button
+
+input_ :: AppM m => m () -> m ()
+input_ = wrapRawElement js_document_createElement_input
 
 header_ :: AppM m => m () -> m ()
 header_ = wrapRawElement js_document_createElement_header

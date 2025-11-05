@@ -3,9 +3,9 @@ name:           putus
 version:        0.1.0.0
 synopsis:       A haskell frontend framework using ghc wasm js ffi
 description:    See https://hackage.haskell.org/package/putus/docs/Putus.html
-author:         mome
-maintainer:     mome
-copyright:      2025 mome
+author:         futu
+maintainer:     futu
+copyright:      2025 futu
 license:        BSD-2-Clause-Patent
 license-file:   LICENSE
 build-type:     Simple
