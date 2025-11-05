@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name:           putus
-version:        0.1.0.0
+version:        0.1.0.1
 synopsis:       A haskell frontend framework using ghc wasm js ffi
 description:    See https://hackage.haskell.org/package/putus/docs/Putus.html
 author:         futu
