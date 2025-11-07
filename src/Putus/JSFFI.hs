@@ -24,7 +24,13 @@ foreign import javascript unsafe "$1.replaceChildren()"
   js_replaceChildren :: JSVal -> IO ()
 
 foreign import javascript unsafe "$1.target.value"
-  js_event_target_value :: JSVal -> IO Double
+  js_event_target_value_double :: JSVal -> IO Double
+
+foreign import javascript unsafe "$1.target.value"
+  js_event_target_value_bool :: JSVal -> IO Bool
+
+foreign import javascript unsafe "$1.target.value"
+  js_event_target_value_string :: JSVal -> IO JSString
 
 foreign import javascript unsafe "$1.target.checked"
   js_event_target_checked :: JSVal -> IO Bool

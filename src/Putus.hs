@@ -39,8 +39,30 @@ reactSignal sig h = div_ $ useSignal sig (\v -> removeChildren >> h v)
 onClick :: AppM m => Signal m a -> (a -> a) -> m ()
 onClick sig f = addEventListener "click" (const $ updateSignal sig f)
 
-onChange :: AppM m => Signal m a -> (Bool -> a -> a) -> m ()
+class FromEventValue a where
+  fromEventValue :: JSVal -> IO a
+
+instance FromEventValue Bool where
+  fromEventValue = js_event_target_value_bool
+
+instance FromEventValue Double where
+  fromEventValue = js_event_target_value_double
+
+instance FromEventValue String where
+  fromEventValue = fmap fromJSString . js_event_target_value_string
+
+onChange :: (AppM m, FromEventValue b) => Signal m a -> (b -> a -> a) -> m ()
 onChange sig f = addEventListener "change" $ \e -> do
+  e' <- fromEventValue e
+  updateSignal sig $ f e'
+
+onInput :: (AppM m, FromEventValue b) => Signal m a -> (b -> a -> a) -> m ()
+onInput sig f = addEventListener "input" $ \e -> do
+  e' <- fromEventValue e
+  updateSignal sig $ f e'
+
+onChangeChecked :: AppM m => Signal m a -> (Bool -> a -> a) -> m ()
+onChangeChecked sig f = addEventListener "change" $ \e -> do
   e' <- js_event_target_checked e
   updateSignal sig $ f e'
 
