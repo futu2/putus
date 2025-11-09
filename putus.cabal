@@ -12,6 +12,10 @@ build-type:     Simple
 
 library
   exposed-modules: Putus
+                 , Putus.Core
+                 , Putus.Html5
+                 , Putus.Utils
+                 , Putus.Dom
                  , Putus.JSFFI
   hs-source-dirs:
       src
