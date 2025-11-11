@@ -61,11 +61,28 @@ li_ = wrapRawElement js_document_createElement_li
 hgroup_ :: Component m => m () -> m ()
 hgroup_ = wrapRawElement js_document_createElement_hgroup
 
+table_ :: Component m => m () -> m ()
+table_ = wrapRawElement js_document_createElement_table
+
+tbody_ :: Component m => m () -> m ()
+tbody_ = wrapRawElement js_document_createElement_tbody
+
+tr_ :: Component m => m () -> m ()
+tr_ = wrapRawElement js_document_createElement_tr
+
+td_ :: Component m => m () -> m ()
+td_ = wrapRawElement js_document_createElement_td
+
+a_ :: Component m => m () -> m ()
+a_ = wrapRawElement js_document_createElement_a
 
 -- | =Attributes
 
 class_ :: Component m => String -> m ()
 class_ = setAttribute "class"
+
+id_ :: Component m => String -> m ()
+id_ = setAttribute "id"
 
 type_ :: Component m => String -> m ()
 type_ = setAttribute "type"

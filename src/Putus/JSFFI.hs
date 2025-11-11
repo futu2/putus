@@ -143,3 +143,18 @@ foreign import javascript unsafe "document.createElement('footer')"
 
 foreign import javascript unsafe "document.createElement('progress')"
   js_document_createElement_progress :: IO JSVal
+
+foreign import javascript unsafe "document.createElement('table')"
+  js_document_createElement_table :: IO JSVal
+
+foreign import javascript unsafe "document.createElement('tbody')"
+  js_document_createElement_tbody :: IO JSVal
+
+foreign import javascript unsafe "document.createElement('tr')"
+  js_document_createElement_tr :: IO JSVal
+
+foreign import javascript unsafe "document.createElement('td')"
+  js_document_createElement_td :: IO JSVal
+
+foreign import javascript unsafe "document.createElement('a')"
+  js_document_createElement_a :: IO JSVal
