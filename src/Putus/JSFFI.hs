@@ -20,6 +20,12 @@ foreign import javascript unsafe "$1.textContent = $2"
 foreign import javascript unsafe "$1.append($2)"
   js_append :: JSVal -> JSVal -> IO ()
 
+foreign import javascript unsafe "$1.children"
+  js_children :: JSVal -> IO JSVal
+
+foreign import javascript unsafe "$2[$1]"
+  js_getIndex :: Int -> JSVal -> IO JSVal
+
 foreign import javascript unsafe "$1.replaceChildren()"
   js_replaceChildren :: JSVal -> IO ()
 

@@ -24,6 +24,15 @@ text_ = setTextContent
 append :: (MonadIO m) => JSVal -> JSVal -> m ()
 append r child = liftIO $ js_append r child
 
+remove :: (MonadIO m) => JSVal -> m ()
+remove = liftIO . js_remove
+
+children :: (MonadIO m) => JSVal -> m JSVal
+children = liftIO . js_children
+
+getIndex :: (MonadIO m) => Int -> JSVal -> m JSVal
+getIndex i xs = liftIO $ js_getIndex i xs
+
 createElement :: MonadIO m => String -> m JSVal
 createElement = liftIO . js_document_createElement . toJSString 
 

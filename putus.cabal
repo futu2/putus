@@ -25,4 +25,5 @@ library
                 , bytestring
                 , mtl
                 , unliftio-core
+                , patience
   default-language: GHC2021
