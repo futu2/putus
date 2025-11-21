@@ -26,4 +26,5 @@ library
                 , mtl
                 , unliftio-core
                 , patience
+                , containers
   default-language: GHC2021

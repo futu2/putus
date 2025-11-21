@@ -11,6 +11,9 @@ import Patience
 import Data.List
 import Data.Foldable
 
+import Data.Map (Map)
+import qualified Data.Map as Map
+
 data Op a = Delete a | InsertBefore a a | Append a | InsertBeforeNew a a | AppendNew a
   deriving Show
 
@@ -36,26 +39,66 @@ react sig h = div_ $ use sig (\v -> removeChildren >> h v)
 reactIn :: Component m => Signal m a -> (a -> m ()) -> m ()
 reactIn sig h = use sig (\v -> removeChildren >> h v)
 
-reactKeyed :: (Component m, Ord k) => Signal m [(k,a)] -> (a -> m ()) -> m ()
-reactKeyed sig h = do
-  lastRenderStore <- liftIO $ newMVar ([] :: [(k, a)])
-  use sig $ \vs -> do
-    lastRender <- liftIO $ readMVar lastRenderStore
-    let newKeys = fst <$> vs
-    let oldKeys = fst <$> lastRender
+reactKeyed :: (Component m, Ord k, Foldable t) => Signal m (t a) -> (a -> k) -> (Signal m a -> m ()) -> m ()
+reactKeyed sig keyBy h = do
+  keyOrderStore <- liftIO $ newMVar ([] :: [k])
+  keySignalStore <- liftIO $ newMVar (Map.empty :: Map k (Signal m a))
+  use sig $ \vs' -> do
+    let vs = toList vs'
+    oldKeys <- liftIO $ takeMVar keyOrderStore
+    oldSignals <- liftIO $ readMVar keySignalStore
+    let newKeys = keyBy <$> vs
     let moves = minimalMoves oldKeys newKeys
+
+    for_ vs $ \v -> case Map.lookup (keyBy v) oldSignals of
+      Nothing -> pure ()
+      Just sig -> liftIO $ updateSignal sig (const v)
+
     c <- asks currentElement
-    let nthChild i = getIndex i =<< children c
+    currentChild <- children c
+    let nthChild i = getIndex i currentChild
     for_ moves $ \moveDetail -> case moveDetail of
-      Delete i -> case findIndex (== i) oldKeys of
-        Just kk -> remove =<< nthChild kk
-        Nothing -> pure ()
+      Delete j -> case findIndex (== j) oldKeys of
+        Nothing -> error "impossible"
+        Just kk -> do
+          remove =<< nthChild kk
+          liftIO $ modifyMVar_ keySignalStore (pure . Map.delete j)
+      Append i -> case findIndex (== i) oldKeys of
+        Nothing -> error "impossible"
+        Just kk -> do
+          append c =<< nthChild kk
+
+      InsertBefore i j -> case (findIndex (== i) oldKeys, findIndex (== j) oldKeys) of
+        (Just kk1, Just kk2) -> do
+          moveChild <- nthChild kk1
+          refChild <- nthChild kk2
+          insertBefore c moveChild refChild
+        _ -> error "impossible"
+     
+      AppendNew i -> case find ((== i) . keyBy) vs of
+        Nothing -> error "impossible"
+        Just v -> do
+          withSignal v $ \sSignal -> do
+            liftIO $ modifyMVar_ keySignalStore (pure . Map.insert i sSignal)
+            h sSignal
+
+      InsertBeforeNew i j -> case findIndex (== j) oldKeys of
+        Nothing -> error "impossible"
+        Just kk -> do
+          refChild <- nthChild kk
+          case find ((== i) . keyBy) vs of
+            Nothing -> error "impossible"
+            Just v -> do
+              withSignal v $ \sSignal -> do
+                liftIO $ modifyMVar_ keySignalStore (pure . Map.insert i sSignal)
+                local (\x -> x {insertRef = Just refChild}) $ h sSignal
       _ -> pure ()
-    liftIO $ putMVar lastRenderStore vs
+    liftIO $ putMVar keyOrderStore newKeys
     
+
 runApp :: String -> ReaderT ComponentConfig IO () -> IO ()
 runApp rootId mainApp = void $ do
   appRoot <- getElementById rootId
   appRoot' <- js_parentElement appRoot
   js_remove appRoot
-  runReaderT mainApp (ComponentConfig appRoot')
+  runReaderT mainApp (ComponentConfig {currentElement = appRoot', insertRef = Nothing})

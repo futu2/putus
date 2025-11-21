@@ -8,7 +8,7 @@ import Control.Monad.Reader
 import Control.Monad.IO.Unlift (MonadUnliftIO, withRunInIO)
 
 -- |Context of component, contains an element all operation acts on
-data ComponentConfig = ComponentConfig {currentElement :: JSVal}
+data ComponentConfig = ComponentConfig {currentElement :: JSVal, insertRef :: Maybe JSVal}
 
 type Component m = (MonadReader ComponentConfig m, MonadIO m, MonadUnliftIO m)
 
@@ -51,6 +51,9 @@ readSignal = readMVar . signalValue
 
 updateSignal :: Signal m a -> (a -> a) -> IO ()
 updateSignal = writeChan . signalChan
+
+updateSignalIO :: Signal m a -> IO (a -> a) -> IO ()
+updateSignalIO sig = (>>= writeChan (signalChan sig))
 
 use :: Component m => Signal m a -> (a -> m ()) -> m ()
 use sig h = do

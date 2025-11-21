@@ -24,6 +24,9 @@ text_ = setTextContent
 append :: (MonadIO m) => JSVal -> JSVal -> m ()
 append r child = liftIO $ js_append r child
 
+insertBefore :: (MonadIO m) => JSVal -> JSVal -> JSVal -> m ()
+insertBefore r newChild refChild = liftIO $ js_insertBefore r newChild refChild
+
 remove :: (MonadIO m) => JSVal -> m ()
 remove = liftIO . js_remove
 
@@ -59,13 +62,19 @@ wrapRawElement :: Component m => IO JSVal -> m () -> m ()
 wrapRawElement raw child = do
   newElement <- liftIO raw
   root <- asks currentElement
-  local (\ x -> x {currentElement = newElement}) child
-  append root newElement
+  ref <- asks insertRef
+  local (\ x -> x {currentElement = newElement, insertRef = Nothing}) child
+  case ref of
+    Nothing -> append root newElement
+    Just refChild -> insertBefore root newElement refChild
 
 -- events
 
 onClick :: Component m => Signal m a -> (a -> a) -> m ()
 onClick sig f = addEventListener "click" (const $ updateSignal sig f)
+
+onClickIO :: Component m => Signal m a -> IO (a -> a) -> m ()
+onClickIO sig f = addEventListener "click" (const $ updateSignalIO sig f)
 
 class FromEventValue a where
   fromEventValue :: JSVal -> IO a

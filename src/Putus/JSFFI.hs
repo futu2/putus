@@ -20,7 +20,10 @@ foreign import javascript unsafe "$1.textContent = $2"
 foreign import javascript unsafe "$1.append($2)"
   js_append :: JSVal -> JSVal -> IO ()
 
-foreign import javascript unsafe "$1.children"
+foreign import javascript unsafe "$1.insertBefore($2, $3)"
+  js_insertBefore :: JSVal -> JSVal -> JSVal -> IO ()
+
+foreign import javascript unsafe "new Array(...$1.children)"
   js_children :: JSVal -> IO JSVal
 
 foreign import javascript unsafe "$2[$1]"
@@ -164,3 +167,6 @@ foreign import javascript unsafe "document.createElement('td')"
 
 foreign import javascript unsafe "document.createElement('a')"
   js_document_createElement_a :: IO JSVal
+
+foreign import javascript unsafe "console.log($1)"
+  js_debug  :: JSVal -> IO ()
