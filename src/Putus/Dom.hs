@@ -33,6 +33,9 @@ remove = liftIO . js_remove
 children :: (MonadIO m) => JSVal -> m JSVal
 children = liftIO . js_children
 
+childElementCount :: (MonadIO m) => JSVal -> m Int
+childElementCount = liftIO . js_childElementCount
+
 getIndex :: (MonadIO m) => Int -> JSVal -> m JSVal
 getIndex i xs = liftIO $ js_getIndex i xs
 

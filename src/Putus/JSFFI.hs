@@ -23,8 +23,11 @@ foreign import javascript unsafe "$1.append($2)"
 foreign import javascript unsafe "$1.insertBefore($2, $3)"
   js_insertBefore :: JSVal -> JSVal -> JSVal -> IO ()
 
-foreign import javascript unsafe "new Array(...$1.children)"
+foreign import javascript unsafe "$1.children"
   js_children :: JSVal -> IO JSVal
+
+foreign import javascript unsafe "$1.childElementCount"
+  js_childElementCount :: JSVal -> IO Int
 
 foreign import javascript unsafe "$2[$1]"
   js_getIndex :: Int -> JSVal -> IO JSVal

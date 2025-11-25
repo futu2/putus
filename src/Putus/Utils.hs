@@ -39,7 +39,7 @@ react sig h = div_ $ use sig (\v -> removeChildren >> h v)
 reactIn :: Component m => Signal m a -> (a -> m ()) -> m ()
 reactIn sig h = use sig (\v -> removeChildren >> h v)
 
-reactKeyed :: (Component m, Ord k, Foldable t) => Signal m (t a) -> (a -> k) -> (Signal m a -> m ()) -> m ()
+reactKeyed :: (Component m, Ord k, Foldable t, Eq a) => Signal m (t a) -> (a -> k) -> (Signal m a -> m ()) -> m ()
 reactKeyed sig keyBy h = do
   keyOrderStore <- liftIO $ newMVar ([] :: [k])
   keySignalStore <- liftIO $ newMVar (Map.empty :: Map k (Signal m a))
@@ -52,26 +52,30 @@ reactKeyed sig keyBy h = do
 
     for_ vs $ \v -> case Map.lookup (keyBy v) oldSignals of
       Nothing -> pure ()
-      Just sig -> liftIO $ updateSignal sig (const v)
+      Just sig -> liftIO $ do
+        vOld <- readSignal sig
+        when (vOld /= v) $ updateSignal sig (const v)
 
     c <- asks currentElement
     currentChild <- children c
-    let nthChild i = getIndex i currentChild
+    currentChildCount <- childElementCount c
+    childList <- traverse (\i -> getIndex i currentChild) [0..currentChildCount-1]
+    -- let nthChild i = getIndex i currentChild
     for_ moves $ \moveDetail -> case moveDetail of
       Delete j -> case findIndex (== j) oldKeys of
         Nothing -> error "impossible"
         Just kk -> do
-          remove =<< nthChild kk
+          remove (childList !! kk)
           liftIO $ modifyMVar_ keySignalStore (pure . Map.delete j)
       Append i -> case findIndex (== i) oldKeys of
         Nothing -> error "impossible"
         Just kk -> do
-          append c =<< nthChild kk
+          append c (childList !! kk)
 
       InsertBefore i j -> case (findIndex (== i) oldKeys, findIndex (== j) oldKeys) of
         (Just kk1, Just kk2) -> do
-          moveChild <- nthChild kk1
-          refChild <- nthChild kk2
+          let moveChild = childList !! kk1
+          let refChild = childList !! kk2
           insertBefore c moveChild refChild
         _ -> error "impossible"
      
@@ -85,7 +89,7 @@ reactKeyed sig keyBy h = do
       InsertBeforeNew i j -> case findIndex (== j) oldKeys of
         Nothing -> error "impossible"
         Just kk -> do
-          refChild <- nthChild kk
+          let refChild = childList !! kk
           case find ((== i) . keyBy) vs of
             Nothing -> error "impossible"
             Just v -> do
